@@ -3,6 +3,7 @@ const Book = require("../models/book");
 const ExpressError = require("../expressError");
 const jsonschema = require("jsonschema");
 const bookSchema = require("../schemas/bookSchema.json");
+const bookUpdateSchema = require("../schemas/bookUpdateSchema.json");
 
 const router = new express.Router();
 
@@ -33,8 +34,8 @@ router.get("/:id", async function (req, res, next) {
 router.post("/", async function (req, res, next) {
   try {
     const result = jsonschema.validate(req.body, bookSchema);
-    // Why is there no 'valid' property of result????
-    if (result.errors.length > 0) {
+
+    if (!result.valid) {
       let listOfErrors = result.errors.map((error) => error.stack);
       let error = new ExpressError(listOfErrors, 400);
       return next(error);
@@ -50,11 +51,16 @@ router.post("/", async function (req, res, next) {
 
 router.put("/:isbn", async function (req, res, next) {
   try {
-    const result = jsonschema.validate(req.body, bookSchema);
+    const result = jsonschema.validate(req.body, bookUpdateSchema);
 
     if (!result.valid) {
       let listOfErrors = result.errors.map((error) => error.stack);
       let error = new ExpressError(listOfErrors, 400);
+      return next(error);
+    }
+
+    if (Object.keys(req.body).length === 0) {
+      let error = new ExpressError("At least one field required", 400);
       return next(error);
     }
 

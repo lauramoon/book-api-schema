@@ -155,7 +155,7 @@ describe("Book Routes Test", function () {
   /** PUT /[isbn]   bookData => {book: updatedBook}  */
 
   describe("PUT /:isbn", function () {
-    test("update existing book", async function () {
+    test("update existing book - all fields supplied", async function () {
       const updatedBook = {
         isbn: "0691161518",
         amazon_url: "http://a.co/eobPtX2",
@@ -183,11 +183,59 @@ describe("Book Routes Test", function () {
         },
       });
     });
-    test("get 400 with invalide data type (pages)", async function () {
+    test("update existing book - one field supplied (author)", async function () {
+      const updatedBook = {
+        author: "Matthew Brane",
+      };
+      const response = await request(app)
+        .put("/books/0691161518")
+        .send(updatedBook);
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        book: {
+          isbn: "0691161518",
+          amazon_url: "http://a.co/eobPtX2",
+          author: "Matthew Brane",
+          language: "english",
+          pages: 264,
+          publisher: "Princeton University Press",
+          title: "Power-Up: Unlocking the Hidden Mathematics in Video Games",
+          year: 2017,
+        },
+      });
+    });
+    test("update existing book - isbn and one field supplied (author)", async function () {
       const updatedBook = {
         isbn: "0691161518",
-        amazon_url: "http://a.co/eobPtX2",
-        author: "Matthew Lane",
+        author: "Matthew Brane",
+      };
+      const response = await request(app)
+        .put("/books/0691161518")
+        .send(updatedBook);
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        book: {
+          isbn: "0691161518",
+          amazon_url: "http://a.co/eobPtX2",
+          author: "Matthew Brane",
+          language: "english",
+          pages: 264,
+          publisher: "Princeton University Press",
+          title: "Power-Up: Unlocking the Hidden Mathematics in Video Games",
+          year: 2017,
+        },
+      });
+    });
+    test("get 400 with no data", async function () {
+      const updatedBook = {};
+      const response = await request(app)
+        .put("/books/0691161518")
+        .send(updatedBook);
+      expect(response.statusCode).toEqual(400);
+      expect(response.error.text).toContain(`At least one field required`);
+    });
+    test("get 400 with invalide data type (pages)", async function () {
+      const updatedBook = {
         language: "english",
         pages: "many",
         publisher: "Princeton University Press",
